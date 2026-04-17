@@ -1,1 +1,1 @@
-Aws infrastructure goes hereS
+Aws infrastructure goes here

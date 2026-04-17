@@ -1,30 +1,30 @@
 "use client";
-
+import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-import { Loader2, Upload, FileText } from "lucide-react";
+import { Loader2, Upload, Image as ImageIcon } from "lucide-react";
 import { uploadFile } from "@/lib/api";
 
-type FileUploadCardProps = {
-  onUploaded: (resultId: string) => void;
-};
+ 
+// ✅ Allow only image formats
+const allowedExtensions = [".jpg", ".jpeg", ".png"];
+const allowedMimeTypes = ["image/jpeg", "image/png"];
 
-const allowedExtensions = [".csv"];
-const allowedMimeTypes = ["text/csv", "application/vnd.ms-excel"];
-
-export function FileUploadCard({ onUploaded }: FileUploadCardProps) {
+export function FileUploadCard() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-  const isCsvFile = (file: File) => {
+  // ✅ Validate image file
+  const isImageFile = (file: File) => {
     const fileName = file.name.toLowerCase();
-    const hasCsvExtension = allowedExtensions.some((ext) =>
+    const hasValidExtension = allowedExtensions.some((ext) =>
       fileName.endsWith(ext)
     );
 
-    return hasCsvExtension || allowedMimeTypes.includes(file.type);
+    return hasValidExtension || allowedMimeTypes.includes(file.type);
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,8 +37,8 @@ export function FileUploadCard({ onUploaded }: FileUploadCardProps) {
       return;
     }
 
-    if (!isCsvFile(file)) {
-      setError("Only CSV files are supported.");
+    if (!isImageFile(file)) {
+      setError("Only JPG and PNG images are supported.");
       setSelectedFile(null);
       return;
     }
@@ -56,12 +56,15 @@ export function FileUploadCard({ onUploaded }: FileUploadCardProps) {
 
       const result = await uploadFile(selectedFile);
 
-      if (!result.success || !result.resultId) {
-        throw new Error(result.message || "Upload did not return a result id.");
+      if (!result.success || !result.s3Key) {
+        throw new Error(result.message || "Upload failed.");
       }
 
-      setMessage(result.message || "CSV uploaded successfully.");
-      onUploaded(result.resultId);
+      setMessage("Image uploaded successfully.");
+
+      // Optional redirect (adjust if needed)
+      // router.push(`/dashboard/${result.s3Key}`);
+
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Something went wrong.";
@@ -78,8 +81,10 @@ export function FileUploadCard({ onUploaded }: FileUploadCardProps) {
           <Upload className="h-5 w-5" />
         </div>
         <div>
-          <h2 className="text-lg font-semibold">Upload a CSV file</h2>
-          <p className="text-sm text-slate-500">Supported type: CSV</p>
+          <h2 className="text-lg font-semibold">Upload an image</h2>
+          <p className="text-sm text-slate-500">
+            Supported types: JPG, PNG
+          </p>
         </div>
       </div>
 
@@ -90,20 +95,20 @@ export function FileUploadCard({ onUploaded }: FileUploadCardProps) {
         <input
           ref={inputRef}
           type="file"
-          accept=".csv,text/csv"
+          accept="image/png,image/jpeg"
           className="hidden"
           onChange={handleFileChange}
         />
 
         <div className="mb-3 text-slate-500">
-          <FileText className="h-5 w-5" />
+          <ImageIcon className="h-5 w-5" />
         </div>
 
         <p className="text-sm font-medium text-slate-700">
-          Click here to choose a CSV file
+          Click here to choose an image
         </p>
         <p className="mt-1 text-xs text-slate-500">
-          Upload retail sales data in CSV format for analysis
+          Upload a handwritten order for text extraction
         </p>
       </div>
 
@@ -117,7 +122,7 @@ export function FileUploadCard({ onUploaded }: FileUploadCardProps) {
             {(selectedFile.size / 1024).toFixed(2)} KB
           </p>
           <p>
-            <span className="font-semibold">Type:</span> CSV
+            <span className="font-semibold">Type:</span> {selectedFile.type}
           </p>
         </div>
       )}
@@ -146,7 +151,7 @@ export function FileUploadCard({ onUploaded }: FileUploadCardProps) {
             Uploading...
           </>
         ) : (
-          "Upload and analyze"
+          "Upload image"
         )}
       </button>
     </section>

@@ -1,0 +1,15 @@
+# Ignore ALL node / build / python envs everywhere
+**/node_modules/
+**/.next/
+**/venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Env files
+.env
+.env.local
+
+# VS Code
+.vscode/
