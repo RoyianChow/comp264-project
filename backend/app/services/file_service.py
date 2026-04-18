@@ -4,9 +4,18 @@ from services.polly_service import get_existing_polly_audio_url
 
 
 def get_file_details_payload(key: str):
+    """ 
+    Generates a payload with the following:
+    - AWS path and corresponding image (file) url
+    - extracted text
+    - audio url (from AWS Polly)
+    """
+    
     file_url = generate_download_url(key)
     lower_key = key.lower()
 
+    # route text extraction based on supported file extensions
+    # as well as exception handling
     if lower_key.endswith((".jpg", ".jpeg", ".png", ".pdf")):
         extracted_text = get_extracted_text_for_key(key)
     elif lower_key.endswith(".csv"):
@@ -14,6 +23,7 @@ def get_file_details_payload(key: str):
     else:
         extracted_text = "Preview/extraction is not supported for this file type."
 
+    # returns assembled file details
     return {
         "success": True,
         "key": key,

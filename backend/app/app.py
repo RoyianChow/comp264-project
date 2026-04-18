@@ -20,6 +20,10 @@ s3 = boto3.client("s3", region_name=AWS_REGION)
 
 
 def error_response(message: str, status_code: int = 500):
+    """
+    helper to standardize error responses across routes
+    """
+
     return Response(
         body={"success": False, "message": message},
         status_code=status_code
@@ -33,6 +37,13 @@ def error_response(message: str, status_code: int = 500):
     content_types=['image/jpeg', 'image/png', 'text/csv']
 )
 def upload_image():
+    """
+    handles: 
+    - raw binary file uploads 
+    - assigns a UUID
+    - saves to S3
+    """
+
     request = app.current_request
 
     if not request.raw_body:
@@ -72,6 +83,10 @@ def upload_image():
 
 @app.route('/files', methods=['GET'], cors=True)
 def get_files():
+    """
+    returns a list of all uploaded files with presigned download links
+    """
+
     try:
         files = list_files(prefix="uploads/")
         return {
@@ -93,6 +108,10 @@ def get_files():
 
 @app.route('/file-details', methods=['GET'], cors=True)
 def file_details():
+    """
+    fetches extracted text and existing audio links for a specific file key
+    """
+
     request = app.current_request
     key = request.query_params.get("key") if request.query_params else None
 
@@ -108,6 +127,10 @@ def file_details():
 
 @app.route('/polly', methods=['POST'], cors=True, content_types=['application/json'])
 def generate_polly_audio():
+    """
+    triggers TTS generation (AWS Polly) and returns the new audio URL
+    """
+
     request = app.current_request
     data = request.json_body
 
@@ -138,6 +161,10 @@ def generate_polly_audio():
 
 @app.route('/delete', methods=['POST'], cors=True, content_types=['application/json'])
 def delete_file():
+    """
+    deletes a specified file and its derivatives from S3
+    """
+
     request = app.current_request
     data = request.json_body
 

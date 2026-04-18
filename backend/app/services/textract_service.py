@@ -8,6 +8,11 @@ textract = boto3.client("textract", region_name=AWS_REGION)
 
 
 def extract_text_from_s3(bucket: str, key: str):
+    """
+    calls AWS Textract to read an S3 document and parses lines/words
+    """
+
+    # synchronously detect text in the document
     response = textract.detect_document_text(
         Document={
             "S3Object": {
@@ -20,6 +25,7 @@ def extract_text_from_s3(bucket: str, key: str):
     lines = []
     words = []
 
+    # filter the response blocks into distint lines and individual words
     for block in response.get("Blocks", []):
         block_type = block.get("BlockType")
 
@@ -33,6 +39,7 @@ def extract_text_from_s3(bucket: str, key: str):
             if text:
                 words.append(text)
 
+    # reconstruct the document keeping natural line breaks
     full_text = "\n".join(lines)
 
     return {
@@ -44,6 +51,10 @@ def extract_text_from_s3(bucket: str, key: str):
 
 
 def get_extracted_text_for_key(key: str) -> str:
+    """
+    FN to quickly return just the full extracted text str
+    """
+
     if not S3_BUCKET:
         raise Exception("S3_BUCKET_NAME is not set")
 

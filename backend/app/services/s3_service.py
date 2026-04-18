@@ -10,6 +10,9 @@ print("S3_BUCKET_NAME =", S3_BUCKET)
 
 
 def upload_file(file_bytes: bytes, key: str, content_type: str = "application/octet-stream"):
+    """
+    uploads raw file bytes to S3
+    """
     if not S3_BUCKET:
         raise Exception("S3_BUCKET_NAME is not set")
 
@@ -24,6 +27,10 @@ def upload_file(file_bytes: bytes, key: str, content_type: str = "application/oc
 
 
 def list_files(prefix: str = ""):
+    """
+    retrieves list of files, skipping directory markers
+    """
+
     if not S3_BUCKET:
         raise Exception("S3_BUCKET_NAME is not set")
 
@@ -35,7 +42,8 @@ def list_files(prefix: str = ""):
     files = []
     for obj in response.get("Contents", []):
         key = obj["Key"]
-
+        
+        # this ensures directory markers are skipped
         if key.endswith("/"):
             continue
 
@@ -49,6 +57,10 @@ def list_files(prefix: str = ""):
 
 
 def generate_download_url(key: str, expires_in: int = 3600):
+    """
+    generates a time-limited (1hr), pre-signed URL for downloading
+    """
+
     if not S3_BUCKET:
         raise Exception("S3_BUCKET_NAME is not set")
 
@@ -62,6 +74,12 @@ def generate_download_url(key: str, expires_in: int = 3600):
     )
 
 def delete_file_and_related_files(s3_client, key: str):
+    """
+    Deletes the following:
+    - source file
+    - extracted text file
+    - generated TTS file
+    """
     if not S3_BUCKET:
         raise Exception("S3_BUCKET_NAME is not set")
 
