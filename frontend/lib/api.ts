@@ -1,13 +1,40 @@
-import { UploadResponse } from "./types";
+import { UploadResponse, FileDetails, S3FileRow, PollyResponse } from "./types";
 
 const API_BASE = "http://127.0.0.1:8000";
 
-export type S3FileRow = {
-  key: string;
-  size: number;
-  lastModified: string | null;
-  downloadUrl: string;
-};
+
+export async function getS3Files(): Promise<S3FileRow[]> {
+  const res = await fetch(`${API_BASE}/files`, {
+    method: "GET",
+    cache: "no-store",
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to fetch files");
+  }
+
+  return data.files;
+}
+
+export async function deleteS3File(key: string) {
+  const res = await fetch(`${API_BASE}/delete`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ key }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to delete file");
+  }
+
+  return data;
+}
 
 // Upload image file
 export async function uploadFile(file: File): Promise<UploadResponse> {
@@ -36,22 +63,6 @@ export async function uploadFile(file: File): Promise<UploadResponse> {
   }
 }
 
-export async function getS3Files(): Promise<S3FileRow[]> {
-  const res = await fetch(`${API_BASE}/files`, {
-    method: "GET",
-    cache: "no-store",
-  });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    throw new Error(data.message || "Failed to fetch files");
-  }
-
-  return data.files;
-}
-
-// Optional: call Textract after upload
 export async function extractOrderText(s3Key: string) {
   const res = await fetch(`${API_BASE}/extract-order`, {
     method: "POST",
@@ -69,7 +80,8 @@ export async function extractOrderText(s3Key: string) {
 
   return data;
 }
-export async function getFileDetails(key: string) {
+
+export async function getFileDetails(key: string): Promise<FileDetails> {
   const res = await fetch(
     `${API_BASE}/file-details?key=${encodeURIComponent(key)}`,
     {
@@ -86,3 +98,26 @@ export async function getFileDetails(key: string) {
 
   return data;
 }
+
+export async function generatePollyAudio(payload: {
+  key: string;
+  text: string;
+}): Promise<PollyResponse> {
+  const res = await fetch(`${API_BASE}/polly`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "Failed to generate Polly audio");
+  }
+
+  return data;
+}
+
+export type { S3FileRow };

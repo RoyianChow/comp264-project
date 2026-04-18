@@ -1,10 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
-
-type DashboardShellProps = {
-  children: ReactNode;
-};
+import { DashboardShellProps } from "@/lib/types";
 
 export function DashboardShell({ children }: DashboardShellProps) {
   return (

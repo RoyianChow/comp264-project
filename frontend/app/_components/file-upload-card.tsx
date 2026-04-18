@@ -1,11 +1,10 @@
 "use client";
-import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { Loader2, Upload, Image as ImageIcon } from "lucide-react";
 import { uploadFile } from "@/lib/api";
 
  
-// ✅ Allow only image formats
+//Allow only image formats
 const allowedExtensions = [".jpg", ".jpeg", ".png"];
 const allowedMimeTypes = ["image/jpeg", "image/png"];
 
@@ -15,9 +14,8 @@ export function FileUploadCard() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
-  // ✅ Validate image file
+  //Validate image file
   const isImageFile = (file: File) => {
     const fileName = file.name.toLowerCase();
     const hasValidExtension = allowedExtensions.some((ext) =>
@@ -62,8 +60,7 @@ export function FileUploadCard() {
 
       setMessage("Image uploaded successfully.");
 
-      // Optional redirect (adjust if needed)
-      // router.push(`/dashboard/${result.s3Key}`);
+      
 
     } catch (err) {
       const message =
