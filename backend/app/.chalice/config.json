@@ -1,0 +1,12 @@
+{
+  "version": "2.0",
+  "app_name": "smart-retail-api",
+  "stages": {
+    "dev": {
+      "api_gateway_stage": "api",
+       "environment_variables": {
+        "S3_BUCKET_NAME": "comp264-smartretail"
+      }
+    }
+  }
+}
